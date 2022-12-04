@@ -1,0 +1,254 @@
+ARM GAS  /tmp/ccrlYYUj.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ServoControl.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.ServoControl,"ax",%progbits
+  18              		.align	1
+  19              		.global	ServoControl
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	ServoControl:
+  27              	.LVL0:
+  28              	.LFB217:
+  29              		.file 1 "user/hardware/src/ServoControl.c"
+   1:user/hardware/src/ServoControl.c **** #include "ServoControl.h"
+   2:user/hardware/src/ServoControl.c **** 
+   3:user/hardware/src/ServoControl.c **** void ServoControlInit(void)
+   4:user/hardware/src/ServoControl.c **** {
+   5:user/hardware/src/ServoControl.c ****     //开启舵机PWM输出通道
+   6:user/hardware/src/ServoControl.c ****     HAL_TIM_PWM_Start(&SERVO_TIM, SERVO_1_CHANNEL);
+   7:user/hardware/src/ServoControl.c ****     HAL_TIM_PWM_Start(&SERVO_TIM, SERVO_2_CHANNEL);
+   8:user/hardware/src/ServoControl.c ****     HAL_TIM_PWM_Start(&SERVO_TIM, SERVO_3_CHANNEL);
+   9:user/hardware/src/ServoControl.c ****     //设置舵机初始化状态.配置初始角度
+  10:user/hardware/src/ServoControl.c ****     ServoControl(&SERVO_TIM, SERVO_1_CHANNEL, SERVO_BEGIN_ANGLE);
+  11:user/hardware/src/ServoControl.c ****     ServoControl(&SERVO_TIM, SERVO_2_CHANNEL, SERVO_BEGIN_ANGLE);
+  12:user/hardware/src/ServoControl.c ****     ServoControl(&SERVO_TIM, SERVO_3_CHANNEL, SERVO_BEGIN_ANGLE);
+  13:user/hardware/src/ServoControl.c **** 
+  14:user/hardware/src/ServoControl.c **** }
+  15:user/hardware/src/ServoControl.c **** 
+  16:user/hardware/src/ServoControl.c **** 
+  17:user/hardware/src/ServoControl.c **** void ServoControl(TIM_HandleTypeDef* ServoTim, uint32_t ServoChannel, uint16_t ServoAngle)
+  18:user/hardware/src/ServoControl.c **** {
+  30              		.loc 1 18 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+  35              		.loc 1 18 1 is_stmt 0 view .LVU1
+  36 0000 07EE902A 		vmov	s15, r2	@ int
+  19:user/hardware/src/ServoControl.c ****     //舵机控制时钟CCR寄存器数值
+  20:user/hardware/src/ServoControl.c ****     uint16_t ServoTimCompare = 0;
+  37              		.loc 1 20 5 is_stmt 1 view .LVU2
+  38              	.LVL1:
+ARM GAS  /tmp/ccrlYYUj.s 			page 2
+
+
+  21:user/hardware/src/ServoControl.c ****     //控制舵机角度，若超过最大值则舵机角度等于最大值，若小于最小值，
+  22:user/hardware/src/ServoControl.c ****     if(ServoAngle >= SERVO_ANGLE_MAX)
+  39              		.loc 1 22 5 view .LVU3
+  40              		.loc 1 22 19 is_stmt 0 view .LVU4
+  41 0004 B8EEE77A 		vcvt.f32.s32	s14, s15
+  42              		.loc 1 22 7 view .LVU5
+  43 0008 DFED176A 		vldr.32	s13, .L11
+  44 000c B4EEE67A 		vcmpe.f32	s14, s13
+  45 0010 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  46 0014 07DA     		bge	.L7
+  23:user/hardware/src/ServoControl.c ****     {
+  24:user/hardware/src/ServoControl.c ****         ServoAngle = SERVO_ANGLE_MAX;
+  25:user/hardware/src/ServoControl.c ****     }
+  26:user/hardware/src/ServoControl.c ****     else if (ServoAngle <= SERVO_ANGLE_MIN)
+  47              		.loc 1 26 10 is_stmt 1 view .LVU6
+  48              		.loc 1 26 13 is_stmt 0 view .LVU7
+  49 0016 B5EEC07A 		vcmpe.f32	s14, #0
+  50 001a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  51 001e 04D8     		bhi	.L2
+  27:user/hardware/src/ServoControl.c ****     {
+  28:user/hardware/src/ServoControl.c ****         ServoAngle = SERVO_ANGLE_MIN;
+  52              		.loc 1 28 20 view .LVU8
+  53 0020 DFED127A 		vldr.32	s15, .L11+4	@ int
+  54 0024 01E0     		b	.L2
+  55              	.L7:
+  24:user/hardware/src/ServoControl.c ****     }
+  56              		.loc 1 24 20 view .LVU9
+  57 0026 DFED127A 		vldr.32	s15, .L11+8	@ int
+  58              	.L2:
+  59              	.LVL2:
+  29:user/hardware/src/ServoControl.c ****     }
+  30:user/hardware/src/ServoControl.c **** 
+  31:user/hardware/src/ServoControl.c ****     //舵机零度时的CCR数值
+  32:user/hardware/src/ServoControl.c ****     uint16_t ServoTIMBeginCompare = (uint16_t)(SERVO_TIM_ARR * SERVO_PWM_MIN_PULSE_WIDTH) / SERVO_P
+  60              		.loc 1 32 5 is_stmt 1 view .LVU10
+  33:user/hardware/src/ServoControl.c ****     //舵机运动CCR数值
+  34:user/hardware/src/ServoControl.c ****     ServoTimCompare = ServoTIMBeginCompare + (uint16_t)((SERVO_TIM_ARR / (SERVO_ANGLE_MAX - SERVO_A
+  61              		.loc 1 34 5 view .LVU11
+  62              		.loc 1 34 111 is_stmt 0 view .LVU12
+  63 002a F8EEE77A 		vcvt.f32.s32	s15, s15
+  64              	.LVL3:
+  65              		.loc 1 34 111 view .LVU13
+  66 002e 9FED117A 		vldr.32	s14, .L11+12
+  67 0032 67EE877A 		vmul.f32	s15, s15, s14
+  68              		.loc 1 34 46 view .LVU14
+  69 0036 FCEEE77A 		vcvt.u32.f32	s15, s15
+  70 003a 17EE903A 		vmov	r3, s15	@ int
+  71 003e 9BB2     		uxth	r3, r3
+  72              		.loc 1 34 21 view .LVU15
+  73 0040 03F5FA73 		add	r3, r3, #500
+  74 0044 9BB2     		uxth	r3, r3
+  75              	.LVL4:
+  35:user/hardware/src/ServoControl.c ****     //配置CCR数值
+  36:user/hardware/src/ServoControl.c ****     __HAL_TIM_SET_COMPARE(ServoTim, ServoChannel, ServoTimCompare);
+  76              		.loc 1 36 5 is_stmt 1 view .LVU16
+  77 0046 11B9     		cbnz	r1, .L3
+  78              		.loc 1 36 5 is_stmt 0 discriminator 1 view .LVU17
+ARM GAS  /tmp/ccrlYYUj.s 			page 3
+
+
+  79 0048 0268     		ldr	r2, [r0]
+  80 004a 5363     		str	r3, [r2, #52]
+  81 004c 7047     		bx	lr
+  82              	.L3:
+  83              		.loc 1 36 5 discriminator 2 view .LVU18
+  84 004e 0429     		cmp	r1, #4
+  85 0050 04D0     		beq	.L9
+  86              		.loc 1 36 5 discriminator 4 view .LVU19
+  87 0052 0829     		cmp	r1, #8
+  88 0054 05D0     		beq	.L10
+  89              		.loc 1 36 5 discriminator 7 view .LVU20
+  90 0056 0268     		ldr	r2, [r0]
+  91 0058 1364     		str	r3, [r2, #64]
+  37:user/hardware/src/ServoControl.c **** }
+  92              		.loc 1 37 1 discriminator 7 view .LVU21
+  93 005a 7047     		bx	lr
+  94              	.L9:
+  36:user/hardware/src/ServoControl.c **** }
+  95              		.loc 1 36 5 discriminator 3 view .LVU22
+  96 005c 0268     		ldr	r2, [r0]
+  97 005e 9363     		str	r3, [r2, #56]
+  98 0060 7047     		bx	lr
+  99              	.L10:
+  36:user/hardware/src/ServoControl.c **** }
+ 100              		.loc 1 36 5 discriminator 6 view .LVU23
+ 101 0062 0268     		ldr	r2, [r0]
+ 102 0064 D363     		str	r3, [r2, #60]
+ 103 0066 7047     		bx	lr
+ 104              	.L12:
+ 105              		.align	2
+ 106              	.L11:
+ 107 0068 00003443 		.word	1127481344
+ 108 006c 00000000 		.word	0
+ 109 0070 B4000000 		.word	180
+ 110 0074 E438DE42 		.word	1121859812
+ 111              		.cfi_endproc
+ 112              	.LFE217:
+ 114              		.section	.text.ServoControlInit,"ax",%progbits
+ 115              		.align	1
+ 116              		.global	ServoControlInit
+ 117              		.syntax unified
+ 118              		.thumb
+ 119              		.thumb_func
+ 120              		.fpu fpv4-sp-d16
+ 122              	ServoControlInit:
+ 123              	.LFB216:
+   4:user/hardware/src/ServoControl.c ****     //开启舵机PWM输出通道
+ 124              		.loc 1 4 1 is_stmt 1 view -0
+ 125              		.cfi_startproc
+ 126              		@ args = 0, pretend = 0, frame = 0
+ 127              		@ frame_needed = 0, uses_anonymous_args = 0
+ 128 0000 10B5     		push	{r4, lr}
+ 129              	.LCFI0:
+ 130              		.cfi_def_cfa_offset 8
+ 131              		.cfi_offset 4, -8
+ 132              		.cfi_offset 14, -4
+   6:user/hardware/src/ServoControl.c ****     HAL_TIM_PWM_Start(&SERVO_TIM, SERVO_2_CHANNEL);
+ARM GAS  /tmp/ccrlYYUj.s 			page 4
+
+
+ 133              		.loc 1 6 5 view .LVU25
+ 134 0002 0E4C     		ldr	r4, .L15
+ 135 0004 0021     		movs	r1, #0
+ 136 0006 2046     		mov	r0, r4
+ 137 0008 FFF7FEFF 		bl	HAL_TIM_PWM_Start
+ 138              	.LVL5:
+   7:user/hardware/src/ServoControl.c ****     HAL_TIM_PWM_Start(&SERVO_TIM, SERVO_3_CHANNEL);
+ 139              		.loc 1 7 5 view .LVU26
+ 140 000c 0421     		movs	r1, #4
+ 141 000e 2046     		mov	r0, r4
+ 142 0010 FFF7FEFF 		bl	HAL_TIM_PWM_Start
+ 143              	.LVL6:
+   8:user/hardware/src/ServoControl.c ****     //设置舵机初始化状态.配置初始角度
+ 144              		.loc 1 8 5 view .LVU27
+ 145 0014 0821     		movs	r1, #8
+ 146 0016 2046     		mov	r0, r4
+ 147 0018 FFF7FEFF 		bl	HAL_TIM_PWM_Start
+ 148              	.LVL7:
+  10:user/hardware/src/ServoControl.c ****     ServoControl(&SERVO_TIM, SERVO_2_CHANNEL, SERVO_BEGIN_ANGLE);
+ 149              		.loc 1 10 5 view .LVU28
+ 150 001c 5A22     		movs	r2, #90
+ 151 001e 0021     		movs	r1, #0
+ 152 0020 2046     		mov	r0, r4
+ 153 0022 FFF7FEFF 		bl	ServoControl
+ 154              	.LVL8:
+  11:user/hardware/src/ServoControl.c ****     ServoControl(&SERVO_TIM, SERVO_3_CHANNEL, SERVO_BEGIN_ANGLE);
+ 155              		.loc 1 11 5 view .LVU29
+ 156 0026 5A22     		movs	r2, #90
+ 157 0028 0421     		movs	r1, #4
+ 158 002a 2046     		mov	r0, r4
+ 159 002c FFF7FEFF 		bl	ServoControl
+ 160              	.LVL9:
+  12:user/hardware/src/ServoControl.c **** 
+ 161              		.loc 1 12 5 view .LVU30
+ 162 0030 5A22     		movs	r2, #90
+ 163 0032 0821     		movs	r1, #8
+ 164 0034 2046     		mov	r0, r4
+ 165 0036 FFF7FEFF 		bl	ServoControl
+ 166              	.LVL10:
+  14:user/hardware/src/ServoControl.c **** 
+ 167              		.loc 1 14 1 is_stmt 0 view .LVU31
+ 168 003a 10BD     		pop	{r4, pc}
+ 169              	.L16:
+ 170              		.align	2
+ 171              	.L15:
+ 172 003c 00000000 		.word	htim1
+ 173              		.cfi_endproc
+ 174              	.LFE216:
+ 176              		.text
+ 177              	.Letext0:
+ 178              		.file 2 "/usr/lib/gcc/arm-none-eabi/10.3.1/include/stdint.h"
+ 179              		.file 3 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xc.h"
+ 180              		.file 4 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 181              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 182              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h"
+ 183              		.file 7 "Core/Inc/tim.h"
+ARM GAS  /tmp/ccrlYYUj.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ServoControl.c
+     /tmp/ccrlYYUj.s:18     .text.ServoControl:0000000000000000 $t
+     /tmp/ccrlYYUj.s:26     .text.ServoControl:0000000000000000 ServoControl
+     /tmp/ccrlYYUj.s:107    .text.ServoControl:0000000000000068 $d
+     /tmp/ccrlYYUj.s:115    .text.ServoControlInit:0000000000000000 $t
+     /tmp/ccrlYYUj.s:122    .text.ServoControlInit:0000000000000000 ServoControlInit
+     /tmp/ccrlYYUj.s:172    .text.ServoControlInit:000000000000003c $d
+
+UNDEFINED SYMBOLS
+HAL_TIM_PWM_Start
+htim1

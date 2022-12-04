@@ -1,0 +1,284 @@
+ARM GAS  /tmp/ccq6b9qf.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"PhotoSensor.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.PhotoSensorAdcStructInit,"ax",%progbits
+  18              		.align	1
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PhotoSensorAdcStructInit:
+  26              	.LVL0:
+  27              	.LFB250:
+  28              		.file 1 "user/hardware/src/PhotoSensor.c"
+   1:user/hardware/src/PhotoSensor.c **** #include "PhotoSensor.h"
+   2:user/hardware/src/PhotoSensor.c **** 
+   3:user/hardware/src/PhotoSensor.c **** 
+   4:user/hardware/src/PhotoSensor.c **** 
+   5:user/hardware/src/PhotoSensor.c **** static void PhotoSensorAdcStructInit(PhotoSensorADC_t* PhotoSensorInitStruct);
+   6:user/hardware/src/PhotoSensor.c **** 
+   7:user/hardware/src/PhotoSensor.c **** //光传感器ADC采样变量
+   8:user/hardware/src/PhotoSensor.c **** PhotoSensorADC_t PhotoSensorAdc;
+   9:user/hardware/src/PhotoSensor.c **** 
+  10:user/hardware/src/PhotoSensor.c **** //光传感器输入ADC初始化
+  11:user/hardware/src/PhotoSensor.c **** void PhotoSensorAdcOpen(void)
+  12:user/hardware/src/PhotoSensor.c **** {
+  13:user/hardware/src/PhotoSensor.c ****     //初始化ADC结构体
+  14:user/hardware/src/PhotoSensor.c ****     PhotoSensorAdcStructInit(&PhotoSensorAdc);
+  15:user/hardware/src/PhotoSensor.c ****     //开启ADC DMA
+  16:user/hardware/src/PhotoSensor.c ****     HAL_ADC_Start_DMA(PhotoSensorAdc.PhotoSensorAdc, PhotoSensorAdc.PhotoSensorAdcValue, PhotoSenso
+  17:user/hardware/src/PhotoSensor.c **** }
+  18:user/hardware/src/PhotoSensor.c **** 
+  19:user/hardware/src/PhotoSensor.c **** static void PhotoSensorAdcStructInit(PhotoSensorADC_t* PhotoSensorInitStruct)
+  20:user/hardware/src/PhotoSensor.c **** {
+  29              		.loc 1 20 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  21:user/hardware/src/PhotoSensor.c ****     //配置光传感器ADC结构体
+  22:user/hardware/src/PhotoSensor.c ****     PhotoSensorInitStruct->PhotoSensorAdc = &PHOTOSENSOR_ADC;
+  34              		.loc 1 22 5 view .LVU1
+  35              		.loc 1 22 43 is_stmt 0 view .LVU2
+  36 0000 074B     		ldr	r3, .L4
+ARM GAS  /tmp/ccq6b9qf.s 			page 2
+
+
+  37 0002 0360     		str	r3, [r0]
+  23:user/hardware/src/PhotoSensor.c ****     //配置ADC采样数组大小
+  24:user/hardware/src/PhotoSensor.c ****     PhotoSensorInitStruct->AdcBufSize = PHOTOSENSOR_ADC_BUF_NUM;
+  38              		.loc 1 24 5 is_stmt 1 view .LVU3
+  39              		.loc 1 24 39 is_stmt 0 view .LVU4
+  40 0004 4FF44073 		mov	r3, #768
+  41 0008 8380     		strh	r3, [r0, #4]	@ movhi
+  25:user/hardware/src/PhotoSensor.c ****     //初始化ADC采样数组
+  26:user/hardware/src/PhotoSensor.c ****     for(int i = 0; i < PhotoSensorInitStruct->AdcBufSize; i++)
+  42              		.loc 1 26 5 is_stmt 1 view .LVU5
+  43              	.LBB2:
+  44              		.loc 1 26 9 view .LVU6
+  45              	.LVL1:
+  46              		.loc 1 26 13 is_stmt 0 view .LVU7
+  47 000a 0023     		movs	r3, #0
+  48              		.loc 1 26 5 view .LVU8
+  49 000c 04E0     		b	.L2
+  50              	.LVL2:
+  51              	.L3:
+  27:user/hardware/src/PhotoSensor.c ****     {
+  28:user/hardware/src/PhotoSensor.c ****         PhotoSensorInitStruct->PhotoSensorAdcValue[i] = 0;
+  52              		.loc 1 28 9 is_stmt 1 discriminator 3 view .LVU9
+  53              		.loc 1 28 55 is_stmt 0 discriminator 3 view .LVU10
+  54 000e 9A1C     		adds	r2, r3, #2
+  55 0010 0021     		movs	r1, #0
+  56 0012 40F82210 		str	r1, [r0, r2, lsl #2]
+  26:user/hardware/src/PhotoSensor.c ****     {
+  57              		.loc 1 26 59 is_stmt 1 discriminator 3 view .LVU11
+  26:user/hardware/src/PhotoSensor.c ****     {
+  58              		.loc 1 26 60 is_stmt 0 discriminator 3 view .LVU12
+  59 0016 0133     		adds	r3, r3, #1
+  60              	.LVL3:
+  61              	.L2:
+  26:user/hardware/src/PhotoSensor.c ****     {
+  62              		.loc 1 26 20 is_stmt 1 discriminator 1 view .LVU13
+  26:user/hardware/src/PhotoSensor.c ****     {
+  63              		.loc 1 26 5 is_stmt 0 discriminator 1 view .LVU14
+  64 0018 B3F5407F 		cmp	r3, #768
+  65 001c F7DB     		blt	.L3
+  66              	.LBE2:
+  29:user/hardware/src/PhotoSensor.c ****     }
+  30:user/hardware/src/PhotoSensor.c **** }
+  67              		.loc 1 30 1 view .LVU15
+  68 001e 7047     		bx	lr
+  69              	.L5:
+  70              		.align	2
+  71              	.L4:
+  72 0020 00000000 		.word	hadc1
+  73              		.cfi_endproc
+  74              	.LFE250:
+  76              		.section	.text.PhotoSensorAdcOpen,"ax",%progbits
+  77              		.align	1
+  78              		.global	PhotoSensorAdcOpen
+  79              		.syntax unified
+  80              		.thumb
+  81              		.thumb_func
+  82              		.fpu fpv4-sp-d16
+ARM GAS  /tmp/ccq6b9qf.s 			page 3
+
+
+  84              	PhotoSensorAdcOpen:
+  85              	.LFB249:
+  12:user/hardware/src/PhotoSensor.c ****     //初始化ADC结构体
+  86              		.loc 1 12 1 is_stmt 1 view -0
+  87              		.cfi_startproc
+  88              		@ args = 0, pretend = 0, frame = 0
+  89              		@ frame_needed = 0, uses_anonymous_args = 0
+  90 0000 10B5     		push	{r4, lr}
+  91              	.LCFI0:
+  92              		.cfi_def_cfa_offset 8
+  93              		.cfi_offset 4, -8
+  94              		.cfi_offset 14, -4
+  14:user/hardware/src/PhotoSensor.c ****     //开启ADC DMA
+  95              		.loc 1 14 5 view .LVU17
+  96 0002 054C     		ldr	r4, .L8
+  97 0004 2046     		mov	r0, r4
+  98 0006 FFF7FEFF 		bl	PhotoSensorAdcStructInit
+  99              	.LVL4:
+  16:user/hardware/src/PhotoSensor.c **** }
+ 100              		.loc 1 16 5 view .LVU18
+ 101 000a 2146     		mov	r1, r4
+ 102 000c 51F8080B 		ldr	r0, [r1], #8
+ 103 0010 A288     		ldrh	r2, [r4, #4]
+ 104 0012 FFF7FEFF 		bl	HAL_ADC_Start_DMA
+ 105              	.LVL5:
+  17:user/hardware/src/PhotoSensor.c **** 
+ 106              		.loc 1 17 1 is_stmt 0 view .LVU19
+ 107 0016 10BD     		pop	{r4, pc}
+ 108              	.L9:
+ 109              		.align	2
+ 110              	.L8:
+ 111 0018 00000000 		.word	.LANCHOR0
+ 112              		.cfi_endproc
+ 113              	.LFE249:
+ 115              		.section	.text.PhotoSensorAdcClose,"ax",%progbits
+ 116              		.align	1
+ 117              		.global	PhotoSensorAdcClose
+ 118              		.syntax unified
+ 119              		.thumb
+ 120              		.thumb_func
+ 121              		.fpu fpv4-sp-d16
+ 123              	PhotoSensorAdcClose:
+ 124              	.LFB251:
+  31:user/hardware/src/PhotoSensor.c **** 
+  32:user/hardware/src/PhotoSensor.c **** // /**
+  33:user/hardware/src/PhotoSensor.c **** //  * @brief Get the Photo Sensor Adc Value object
+  34:user/hardware/src/PhotoSensor.c **** //  * 
+  35:user/hardware/src/PhotoSensor.c **** //  * @return 返回存放光传感器ADC数值数组的地址
+  36:user/hardware/src/PhotoSensor.c **** //  */
+  37:user/hardware/src/PhotoSensor.c **** // uint32_t* GetPhotoSensorAdcValue(void)
+  38:user/hardware/src/PhotoSensor.c **** // {
+  39:user/hardware/src/PhotoSensor.c **** //     return PhotoSensorAdcValue;
+  40:user/hardware/src/PhotoSensor.c **** // }
+  41:user/hardware/src/PhotoSensor.c **** 
+  42:user/hardware/src/PhotoSensor.c **** //关闭光传感ADC数据采集
+  43:user/hardware/src/PhotoSensor.c **** void PhotoSensorAdcClose(void)
+  44:user/hardware/src/PhotoSensor.c **** {
+ARM GAS  /tmp/ccq6b9qf.s 			page 4
+
+
+ 125              		.loc 1 44 1 is_stmt 1 view -0
+ 126              		.cfi_startproc
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129 0000 08B5     		push	{r3, lr}
+ 130              	.LCFI1:
+ 131              		.cfi_def_cfa_offset 8
+ 132              		.cfi_offset 3, -8
+ 133              		.cfi_offset 14, -4
+  45:user/hardware/src/PhotoSensor.c ****     HAL_ADC_Stop_DMA(PhotoSensorAdc.PhotoSensorAdc);
+ 134              		.loc 1 45 5 view .LVU21
+ 135 0002 024B     		ldr	r3, .L12
+ 136 0004 1868     		ldr	r0, [r3]
+ 137 0006 FFF7FEFF 		bl	HAL_ADC_Stop_DMA
+ 138              	.LVL6:
+  46:user/hardware/src/PhotoSensor.c **** }
+ 139              		.loc 1 46 1 is_stmt 0 view .LVU22
+ 140 000a 08BD     		pop	{r3, pc}
+ 141              	.L13:
+ 142              		.align	2
+ 143              	.L12:
+ 144 000c 00000000 		.word	.LANCHOR0
+ 145              		.cfi_endproc
+ 146              	.LFE251:
+ 148              		.section	.text.GetPhotoSensorAdcStruct,"ax",%progbits
+ 149              		.align	1
+ 150              		.global	GetPhotoSensorAdcStruct
+ 151              		.syntax unified
+ 152              		.thumb
+ 153              		.thumb_func
+ 154              		.fpu fpv4-sp-d16
+ 156              	GetPhotoSensorAdcStruct:
+ 157              	.LFB252:
+  47:user/hardware/src/PhotoSensor.c **** 
+  48:user/hardware/src/PhotoSensor.c **** 
+  49:user/hardware/src/PhotoSensor.c **** PhotoSensorADC_t* GetPhotoSensorAdcStruct(void)
+  50:user/hardware/src/PhotoSensor.c **** {
+ 158              		.loc 1 50 1 is_stmt 1 view -0
+ 159              		.cfi_startproc
+ 160              		@ args = 0, pretend = 0, frame = 0
+ 161              		@ frame_needed = 0, uses_anonymous_args = 0
+ 162              		@ link register save eliminated.
+  51:user/hardware/src/PhotoSensor.c ****     return &PhotoSensorAdc;
+ 163              		.loc 1 51 5 view .LVU24
+  52:user/hardware/src/PhotoSensor.c **** }
+ 164              		.loc 1 52 1 is_stmt 0 view .LVU25
+ 165 0000 0048     		ldr	r0, .L15
+ 166 0002 7047     		bx	lr
+ 167              	.L16:
+ 168              		.align	2
+ 169              	.L15:
+ 170 0004 00000000 		.word	.LANCHOR0
+ 171              		.cfi_endproc
+ 172              	.LFE252:
+ 174              		.global	PhotoSensorAdc
+ 175              		.section	.bss.PhotoSensorAdc,"aw",%nobits
+ 176              		.align	2
+ARM GAS  /tmp/ccq6b9qf.s 			page 5
+
+
+ 177              		.set	.LANCHOR0,. + 0
+ 180              	PhotoSensorAdc:
+ 181 0000 00000000 		.space	3080
+ 181      00000000 
+ 181      00000000 
+ 181      00000000 
+ 181      00000000 
+ 182              		.text
+ 183              	.Letext0:
+ 184              		.file 2 "/usr/lib/gcc/arm-none-eabi/10.3.1/include/stdint.h"
+ 185              		.file 3 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xc.h"
+ 186              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 187              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 188              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 189              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h"
+ 190              		.file 8 "user/hardware/inc/PhotoSensor.h"
+ 191              		.file 9 "Core/Inc/adc.h"
+ARM GAS  /tmp/ccq6b9qf.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 PhotoSensor.c
+     /tmp/ccq6b9qf.s:18     .text.PhotoSensorAdcStructInit:0000000000000000 $t
+     /tmp/ccq6b9qf.s:25     .text.PhotoSensorAdcStructInit:0000000000000000 PhotoSensorAdcStructInit
+     /tmp/ccq6b9qf.s:72     .text.PhotoSensorAdcStructInit:0000000000000020 $d
+     /tmp/ccq6b9qf.s:77     .text.PhotoSensorAdcOpen:0000000000000000 $t
+     /tmp/ccq6b9qf.s:84     .text.PhotoSensorAdcOpen:0000000000000000 PhotoSensorAdcOpen
+     /tmp/ccq6b9qf.s:111    .text.PhotoSensorAdcOpen:0000000000000018 $d
+     /tmp/ccq6b9qf.s:116    .text.PhotoSensorAdcClose:0000000000000000 $t
+     /tmp/ccq6b9qf.s:123    .text.PhotoSensorAdcClose:0000000000000000 PhotoSensorAdcClose
+     /tmp/ccq6b9qf.s:144    .text.PhotoSensorAdcClose:000000000000000c $d
+     /tmp/ccq6b9qf.s:149    .text.GetPhotoSensorAdcStruct:0000000000000000 $t
+     /tmp/ccq6b9qf.s:156    .text.GetPhotoSensorAdcStruct:0000000000000000 GetPhotoSensorAdcStruct
+     /tmp/ccq6b9qf.s:170    .text.GetPhotoSensorAdcStruct:0000000000000004 $d
+     /tmp/ccq6b9qf.s:180    .bss.PhotoSensorAdc:0000000000000000 PhotoSensorAdc
+     /tmp/ccq6b9qf.s:176    .bss.PhotoSensorAdc:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+hadc1
+HAL_ADC_Start_DMA
+HAL_ADC_Stop_DMA

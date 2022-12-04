@@ -1,0 +1,896 @@
+ARM GAS  /tmp/cc8h4sSR.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"AdcDataHandle.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.AdcDataToFourierData,"ax",%progbits
+  18              		.align	1
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	AdcDataToFourierData:
+  26              	.LVL0:
+  27              	.LFB253:
+  28              		.file 1 "user/application/task/src/AdcDataHandle.c"
+   1:user/application/task/src/AdcDataHandle.c **** #include "AdcDataHandle.h"
+   2:user/application/task/src/AdcDataHandle.c **** 
+   3:user/application/task/src/AdcDataHandle.c **** 
+   4:user/application/task/src/AdcDataHandle.c **** static void PhotoSensorFourierTransform(void);
+   5:user/application/task/src/AdcDataHandle.c **** static void AdcDataToFourierData(AdcData_t* AdcData, uint16_t AdcNum,
+   6:user/application/task/src/AdcDataHandle.c ****                                 FourierData_t* FourierData_1, uint16_t FourierNum_1,
+   7:user/application/task/src/AdcDataHandle.c ****                                 FourierData_t* FourierData_2, uint16_t FourierNum_2,
+   8:user/application/task/src/AdcDataHandle.c ****                                 FourierData_t* FourierData_3, uint16_t FourierNum_3);
+   9:user/application/task/src/AdcDataHandle.c **** 
+  10:user/application/task/src/AdcDataHandle.c **** // static void DeleteDCSignale(FourierData_t* Fourier, uint16_t FourierBufNum);
+  11:user/application/task/src/AdcDataHandle.c **** static void AdcFilterStructInit(AdcFilterValue_t* AdcFilterStructInit);
+  12:user/application/task/src/AdcDataHandle.c **** static void GetSpecificValue(AdcFilterValue_t* PhotoSensorValue);
+  13:user/application/task/src/AdcDataHandle.c **** 
+  14:user/application/task/src/AdcDataHandle.c **** 
+  15:user/application/task/src/AdcDataHandle.c **** AdcFilterValue_t AdcfilterValue;
+  16:user/application/task/src/AdcDataHandle.c **** 
+  17:user/application/task/src/AdcDataHandle.c **** AdcFilterValue_t* GetAdcFilterValue(void)
+  18:user/application/task/src/AdcDataHandle.c **** {
+  19:user/application/task/src/AdcDataHandle.c ****     return &AdcfilterValue;
+  20:user/application/task/src/AdcDataHandle.c **** }
+  21:user/application/task/src/AdcDataHandle.c **** 
+  22:user/application/task/src/AdcDataHandle.c **** // //光传感器Fourier transform信号提取 
+  23:user/application/task/src/AdcDataHandle.c **** static void PhotoSensorFourierTransform(void)
+  24:user/application/task/src/AdcDataHandle.c **** {
+  25:user/application/task/src/AdcDataHandle.c ****     //初始化ADC信号过滤结构体
+  26:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit(&AdcfilterValue);
+  27:user/application/task/src/AdcDataHandle.c **** 
+  28:user/application/task/src/AdcDataHandle.c ****     //提取ADC采样结果，将ADC采样结果放于Fourier transform buf内
+  29:user/application/task/src/AdcDataHandle.c ****     AdcDataToFourierData(AdcfilterValue.AdcStruct->PhotoSensorAdcValue, AdcfilterValue.AdcStruct->A
+  30:user/application/task/src/AdcDataHandle.c ****                         AdcfilterValue.PhotoSensorFFT_1.PhotoSensorFFTInputValue, AdcfilterValue.Ph
+ARM GAS  /tmp/cc8h4sSR.s 			page 2
+
+
+  31:user/application/task/src/AdcDataHandle.c ****                         AdcfilterValue.PhotoSensorFFT_2.PhotoSensorFFTInputValue, AdcfilterValue.Ph
+  32:user/application/task/src/AdcDataHandle.c ****                         AdcfilterValue.PhotoSensorFFT_3.PhotoSensorFFTInputValue, AdcfilterValue.Ph
+  33:user/application/task/src/AdcDataHandle.c ****     //FFT变换结构体初始化
+  34:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_init_f32(&AdcfilterValue.PhotoSensorFFT_1.PhotoSensorFFT, FOURIER_TRANSFORM_POI
+  35:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_init_f32(&AdcfilterValue.PhotoSensorFFT_2.PhotoSensorFFT, FOURIER_TRANSFORM_POI
+  36:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_init_f32(&AdcfilterValue.PhotoSensorFFT_3.PhotoSensorFFT, FOURIER_TRANSFORM_POI
+  37:user/application/task/src/AdcDataHandle.c ****     //FFT计算
+  38:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_f32(&AdcfilterValue.PhotoSensorFFT_1.PhotoSensorFFT, AdcfilterValue.PhotoSensor
+  39:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_f32(&AdcfilterValue.PhotoSensorFFT_2.PhotoSensorFFT, AdcfilterValue.PhotoSensor
+  40:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_f32(&AdcfilterValue.PhotoSensorFFT_3.PhotoSensorFFT, AdcfilterValue.PhotoSensor
+  41:user/application/task/src/AdcDataHandle.c ****     
+  42:user/application/task/src/AdcDataHandle.c ****     //计算信号幅度谱
+  43:user/application/task/src/AdcDataHandle.c ****     arm_cmplx_mag_f32(AdcfilterValue.PhotoSensorFFT_1.PhotoSensorFFTInputValue, AdcfilterValue.Phot
+  44:user/application/task/src/AdcDataHandle.c ****     arm_cmplx_mag_f32(AdcfilterValue.PhotoSensorFFT_2.PhotoSensorFFTInputValue, AdcfilterValue.Phot
+  45:user/application/task/src/AdcDataHandle.c ****     arm_cmplx_mag_f32(AdcfilterValue.PhotoSensorFFT_3.PhotoSensorFFTInputValue, AdcfilterValue.Phot
+  46:user/application/task/src/AdcDataHandle.c **** 
+  47:user/application/task/src/AdcDataHandle.c ****     GetSpecificValue(&AdcfilterValue);
+  48:user/application/task/src/AdcDataHandle.c **** } 
+  49:user/application/task/src/AdcDataHandle.c **** 
+  50:user/application/task/src/AdcDataHandle.c **** //判断ADC转运结束，开启FFT进行滤波处理
+  51:user/application/task/src/AdcDataHandle.c **** void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
+  52:user/application/task/src/AdcDataHandle.c **** {
+  53:user/application/task/src/AdcDataHandle.c ****     //完成一次测量关闭DMA数据转运
+  54:user/application/task/src/AdcDataHandle.c ****     HAL_ADC_Stop_DMA(&PHOTOSENSOR_ADC);
+  55:user/application/task/src/AdcDataHandle.c ****     //处理ADC采样数据，对采样数据进行信号处理，提取特定频段数据
+  56:user/application/task/src/AdcDataHandle.c ****     PhotoSensorFourierTransform();
+  57:user/application/task/src/AdcDataHandle.c ****     //开启ADC DMA转运
+  58:user/application/task/src/AdcDataHandle.c ****     PhotoSensorAdcOpen();    
+  59:user/application/task/src/AdcDataHandle.c **** 
+  60:user/application/task/src/AdcDataHandle.c **** }
+  61:user/application/task/src/AdcDataHandle.c **** 
+  62:user/application/task/src/AdcDataHandle.c **** //ADC信号过滤结构体初始化
+  63:user/application/task/src/AdcDataHandle.c **** static void AdcFilterStructInit(AdcFilterValue_t* AdcFilterStructInit)
+  64:user/application/task/src/AdcDataHandle.c **** {
+  65:user/application/task/src/AdcDataHandle.c ****     //获取ADC原数组
+  66:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->AdcStruct = GetPhotoSensorAdcStruct();
+  67:user/application/task/src/AdcDataHandle.c ****     //配置Fourier transform buf size
+  68:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_1.PhotoSensorFFTInputSize = FOURIER_INPUT_BUF_NUM;
+  69:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_2.PhotoSensorFFTInputSize = FOURIER_INPUT_BUF_NUM;
+  70:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_3.PhotoSensorFFTInputSize = FOURIER_INPUT_BUF_NUM;
+  71:user/application/task/src/AdcDataHandle.c **** 
+  72:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_1.PhotoSensorFFTOutputSize = FOURIER_OUPUT_BUF_NUM;
+  73:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_2.PhotoSensorFFTOutputSize = FOURIER_OUPUT_BUF_NUM;
+  74:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_3.PhotoSensorFFTOutputSize = FOURIER_OUPUT_BUF_NUM;
+  75:user/application/task/src/AdcDataHandle.c ****     //配置FFT提取元素
+  76:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->AdcSampleNumMin = ADC_SAMPLE_MIN_NUM;
+  77:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->AdcSampleNumMax = ADC_SAMPLE_MAX_NUM;
+  78:user/application/task/src/AdcDataHandle.c **** }
+  79:user/application/task/src/AdcDataHandle.c **** 
+  80:user/application/task/src/AdcDataHandle.c **** /**
+  81:user/application/task/src/AdcDataHandle.c ****  * @brief ADC数值提取，将ADC数值赋于Fouier transform buf内，赋值顺序为FourierData_
+  82:user/application/task/src/AdcDataHandle.c ****  * 
+  83:user/application/task/src/AdcDataHandle.c ****  * @param AdcData ADC采样buf
+  84:user/application/task/src/AdcDataHandle.c ****  * @param AdcNum ADC采样数值大小
+  85:user/application/task/src/AdcDataHandle.c ****  * @param FourierData_1 Fourier赋值数组一，
+  86:user/application/task/src/AdcDataHandle.c ****  * @param FourierNum_1 Fourier赋值数组一大小
+  87:user/application/task/src/AdcDataHandle.c ****  * @param FourierData_2 Fourier赋值数组二
+ARM GAS  /tmp/cc8h4sSR.s 			page 3
+
+
+  88:user/application/task/src/AdcDataHandle.c ****  * @param FourierNum_2 Fourier赋值数值二大小
+  89:user/application/task/src/AdcDataHandle.c ****  * @param FourierData_3 Fourier赋值数组三
+  90:user/application/task/src/AdcDataHandle.c ****  * @param FourierNum_3 Fourier赋值数组三大小
+  91:user/application/task/src/AdcDataHandle.c ****  */
+  92:user/application/task/src/AdcDataHandle.c **** static void AdcDataToFourierData(AdcData_t* AdcData, uint16_t AdcNum,
+  93:user/application/task/src/AdcDataHandle.c ****                                 FourierData_t* FourierData_1, uint16_t FourierNum_1,
+  94:user/application/task/src/AdcDataHandle.c ****                                 FourierData_t* FourierData_2, uint16_t FourierNum_2,
+  95:user/application/task/src/AdcDataHandle.c ****                                 FourierData_t* FourierData_3, uint16_t FourierNum_3)
+  96:user/application/task/src/AdcDataHandle.c **** {
+  29              		.loc 1 96 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 16, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 96 1 is_stmt 0 view .LVU1
+  34 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 36
+  37              		.cfi_offset 4, -36
+  38              		.cfi_offset 5, -32
+  39              		.cfi_offset 6, -28
+  40              		.cfi_offset 7, -24
+  41              		.cfi_offset 8, -20
+  42              		.cfi_offset 9, -16
+  43              		.cfi_offset 10, -12
+  44              		.cfi_offset 11, -8
+  45              		.cfi_offset 14, -4
+  46 0004 BDF82890 		ldrh	r9, [sp, #40]
+  47 0008 DDF82C80 		ldr	r8, [sp, #44]
+  48 000c BDF830A0 		ldrh	r10, [sp, #48]
+  97:user/application/task/src/AdcDataHandle.c ****     int i = 0;//总循环用
+  49              		.loc 1 97 5 is_stmt 1 view .LVU2
+  50              	.LVL1:
+  98:user/application/task/src/AdcDataHandle.c **** 
+  99:user/application/task/src/AdcDataHandle.c ****     int FourierCount_1 = 0;//Fourier计数数组1
+  51              		.loc 1 99 5 view .LVU3
+ 100:user/application/task/src/AdcDataHandle.c ****     int FourierCount_2 = 0;//Fourier计数数组2
+  52              		.loc 1 100 5 view .LVU4
+ 101:user/application/task/src/AdcDataHandle.c ****     int FourierCount_3 = 0;//Fourier计数数组3
+  53              		.loc 1 101 5 view .LVU5
+ 102:user/application/task/src/AdcDataHandle.c **** 
+ 103:user/application/task/src/AdcDataHandle.c ****     for(i = 0; i < AdcNum; i++)
+  54              		.loc 1 103 5 view .LVU6
+ 101:user/application/task/src/AdcDataHandle.c ****     int FourierCount_3 = 0;//Fourier计数数组3
+  55              		.loc 1 101 9 is_stmt 0 view .LVU7
+  56 0010 0026     		movs	r6, #0
+ 100:user/application/task/src/AdcDataHandle.c ****     int FourierCount_3 = 0;//Fourier计数数组3
+  57              		.loc 1 100 9 view .LVU8
+  58 0012 3546     		mov	r5, r6
+  99:user/application/task/src/AdcDataHandle.c ****     int FourierCount_2 = 0;//Fourier计数数组2
+  59              		.loc 1 99 9 view .LVU9
+  60 0014 3446     		mov	r4, r6
+  61              		.loc 1 103 11 view .LVU10
+  62 0016 B646     		mov	lr, r6
+  63              		.loc 1 103 5 view .LVU11
+  64 0018 07E0     		b	.L2
+  65              	.LVL2:
+  66              	.L3:
+ARM GAS  /tmp/cc8h4sSR.s 			page 4
+
+
+ 104:user/application/task/src/AdcDataHandle.c ****     {
+ 105:user/application/task/src/AdcDataHandle.c ****         //赋值fouier 数组1
+ 106:user/application/task/src/AdcDataHandle.c ****         if(i % 3 == 0)
+ 107:user/application/task/src/AdcDataHandle.c ****         {
+ 108:user/application/task/src/AdcDataHandle.c ****             //判断是否越界
+ 109:user/application/task/src/AdcDataHandle.c ****             if(FourierCount_1 >= FourierNum_1)
+ 110:user/application/task/src/AdcDataHandle.c ****             {
+ 111:user/application/task/src/AdcDataHandle.c ****                 return;
+ 112:user/application/task/src/AdcDataHandle.c ****             }
+ 113:user/application/task/src/AdcDataHandle.c **** 
+ 114:user/application/task/src/AdcDataHandle.c ****             FourierData_1[FourierCount_1++] = AdcData[i];//实部赋ADC数值
+ 115:user/application/task/src/AdcDataHandle.c ****             FourierData_1[FourierCount_1++] = 0;//虚部赋零
+ 116:user/application/task/src/AdcDataHandle.c ****         }
+ 117:user/application/task/src/AdcDataHandle.c ****         //赋值fourier 数组2
+ 118:user/application/task/src/AdcDataHandle.c ****         else if(i % 3 == 1)
+  67              		.loc 1 118 14 is_stmt 1 view .LVU12
+  68              		.loc 1 118 16 is_stmt 0 view .LVU13
+  69 001a BCF1010F 		cmp	ip, #1
+  70 001e 27D0     		beq	.L9
+ 119:user/application/task/src/AdcDataHandle.c ****         {
+ 120:user/application/task/src/AdcDataHandle.c ****             //判断是否越界
+ 121:user/application/task/src/AdcDataHandle.c ****             if(FourierCount_2 >= FourierNum_2)
+ 122:user/application/task/src/AdcDataHandle.c ****             {
+ 123:user/application/task/src/AdcDataHandle.c ****                 return;
+ 124:user/application/task/src/AdcDataHandle.c ****             }
+ 125:user/application/task/src/AdcDataHandle.c ****             FourierData_2[FourierCount_2++] = AdcData[i];
+ 126:user/application/task/src/AdcDataHandle.c ****             FourierData_2[FourierCount_2++] = 0;
+ 127:user/application/task/src/AdcDataHandle.c ****         }
+ 128:user/application/task/src/AdcDataHandle.c ****         //赋值fourier 数组3
+ 129:user/application/task/src/AdcDataHandle.c ****         else if(i % 3 == 2)
+  71              		.loc 1 129 14 is_stmt 1 view .LVU14
+  72              		.loc 1 129 16 is_stmt 0 view .LVU15
+  73 0020 BCF1020F 		cmp	ip, #2
+  74 0024 3CD0     		beq	.L10
+  75              	.LVL3:
+  76              	.L5:
+ 103:user/application/task/src/AdcDataHandle.c ****     {
+  77              		.loc 1 103 28 is_stmt 1 discriminator 2 view .LVU16
+ 103:user/application/task/src/AdcDataHandle.c ****     {
+  78              		.loc 1 103 29 is_stmt 0 discriminator 2 view .LVU17
+  79 0026 0EF1010E 		add	lr, lr, #1
+  80              	.LVL4:
+  81              	.L2:
+ 103:user/application/task/src/AdcDataHandle.c ****     {
+  82              		.loc 1 103 16 is_stmt 1 discriminator 1 view .LVU18
+ 103:user/application/task/src/AdcDataHandle.c ****     {
+  83              		.loc 1 103 5 is_stmt 0 discriminator 1 view .LVU19
+  84 002a 7145     		cmp	r1, lr
+  85 002c 4EDD     		ble	.L1
+ 106:user/application/task/src/AdcDataHandle.c ****         {
+  86              		.loc 1 106 9 is_stmt 1 view .LVU20
+ 106:user/application/task/src/AdcDataHandle.c ****         {
+  87              		.loc 1 106 14 is_stmt 0 view .LVU21
+  88 002e DFF8A4C0 		ldr	ip, .L11+4
+  89 0032 8CFB0E7C 		smull	r7, ip, ip, lr
+  90 0036 ACEBEE7C 		sub	ip, ip, lr, asr #31
+  91 003a 0CEB4C0C 		add	ip, ip, ip, lsl #1
+ARM GAS  /tmp/cc8h4sSR.s 			page 5
+
+
+ 106:user/application/task/src/AdcDataHandle.c ****         {
+  92              		.loc 1 106 11 view .LVU22
+  93 003e BEEB0C0C 		subs	ip, lr, ip
+  94 0042 EAD1     		bne	.L3
+ 109:user/application/task/src/AdcDataHandle.c ****             {
+  95              		.loc 1 109 13 is_stmt 1 view .LVU23
+ 109:user/application/task/src/AdcDataHandle.c ****             {
+  96              		.loc 1 109 15 is_stmt 0 view .LVU24
+  97 0044 A342     		cmp	r3, r4
+  98 0046 41DD     		ble	.L1
+ 114:user/application/task/src/AdcDataHandle.c ****             FourierData_1[FourierCount_1++] = 0;//虚部赋零
+  99              		.loc 1 114 13 is_stmt 1 view .LVU25
+ 114:user/application/task/src/AdcDataHandle.c ****             FourierData_1[FourierCount_1++] = 0;//虚部赋零
+ 100              		.loc 1 114 41 is_stmt 0 view .LVU26
+ 101 0048 04F1010C 		add	ip, r4, #1
+ 102              	.LVL5:
+ 114:user/application/task/src/AdcDataHandle.c ****             FourierData_1[FourierCount_1++] = 0;//虚部赋零
+ 103              		.loc 1 114 26 view .LVU27
+ 104 004c 02EB840B 		add	fp, r2, r4, lsl #2
+ 114:user/application/task/src/AdcDataHandle.c ****             FourierData_1[FourierCount_1++] = 0;//虚部赋零
+ 105              		.loc 1 114 45 view .LVU28
+ 106 0050 50F82E70 		ldr	r7, [r0, lr, lsl #2]
+ 107 0054 07EE907A 		vmov	s15, r7	@ int
+ 108 0058 F8EE677A 		vcvt.f32.u32	s15, s15
+ 109 005c CBED007A 		vstr.32	s15, [fp]
+ 115:user/application/task/src/AdcDataHandle.c ****         }
+ 110              		.loc 1 115 13 is_stmt 1 view .LVU29
+ 111              	.LVL6:
+ 115:user/application/task/src/AdcDataHandle.c ****         }
+ 112              		.loc 1 115 26 is_stmt 0 view .LVU30
+ 113 0060 02EB8C0C 		add	ip, r2, ip, lsl #2
+ 114 0064 0234     		adds	r4, r4, #2
+ 115              	.LVL7:
+ 115:user/application/task/src/AdcDataHandle.c ****         }
+ 116              		.loc 1 115 45 view .LVU31
+ 117 0066 DFED1A7A 		vldr.32	s15, .L11
+ 118 006a CCED007A 		vstr.32	s15, [ip]
+ 119 006e DAE7     		b	.L5
+ 120              	.LVL8:
+ 121              	.L9:
+ 121:user/application/task/src/AdcDataHandle.c ****             {
+ 122              		.loc 1 121 13 is_stmt 1 view .LVU32
+ 121:user/application/task/src/AdcDataHandle.c ****             {
+ 123              		.loc 1 121 15 is_stmt 0 view .LVU33
+ 124 0070 A945     		cmp	r9, r5
+ 125 0072 2BDD     		ble	.L1
+ 125:user/application/task/src/AdcDataHandle.c ****             FourierData_2[FourierCount_2++] = 0;
+ 126              		.loc 1 125 13 is_stmt 1 view .LVU34
+ 125:user/application/task/src/AdcDataHandle.c ****             FourierData_2[FourierCount_2++] = 0;
+ 127              		.loc 1 125 41 is_stmt 0 view .LVU35
+ 128 0074 05F1010C 		add	ip, r5, #1
+ 129              	.LVL9:
+ 125:user/application/task/src/AdcDataHandle.c ****             FourierData_2[FourierCount_2++] = 0;
+ 130              		.loc 1 125 26 view .LVU36
+ 131 0078 099F     		ldr	r7, [sp, #36]
+ 132 007a 07EB850B 		add	fp, r7, r5, lsl #2
+ 125:user/application/task/src/AdcDataHandle.c ****             FourierData_2[FourierCount_2++] = 0;
+ARM GAS  /tmp/cc8h4sSR.s 			page 6
+
+
+ 133              		.loc 1 125 45 view .LVU37
+ 134 007e 50F82E70 		ldr	r7, [r0, lr, lsl #2]
+ 135 0082 07EE907A 		vmov	s15, r7	@ int
+ 136 0086 F8EE677A 		vcvt.f32.u32	s15, s15
+ 137 008a CBED007A 		vstr.32	s15, [fp]
+ 126:user/application/task/src/AdcDataHandle.c ****         }
+ 138              		.loc 1 126 13 is_stmt 1 view .LVU38
+ 139              	.LVL10:
+ 126:user/application/task/src/AdcDataHandle.c ****         }
+ 140              		.loc 1 126 26 is_stmt 0 view .LVU39
+ 141 008e 099F     		ldr	r7, [sp, #36]
+ 142 0090 07EB8C0C 		add	ip, r7, ip, lsl #2
+ 143 0094 0235     		adds	r5, r5, #2
+ 144              	.LVL11:
+ 126:user/application/task/src/AdcDataHandle.c ****         }
+ 145              		.loc 1 126 45 view .LVU40
+ 146 0096 4FF0000B 		mov	fp, #0
+ 147 009a CCF800B0 		str	fp, [ip]	@ float
+ 148 009e C2E7     		b	.L5
+ 149              	.LVL12:
+ 150              	.L10:
+ 130:user/application/task/src/AdcDataHandle.c ****         {
+ 131:user/application/task/src/AdcDataHandle.c ****             //判读是否越界
+ 132:user/application/task/src/AdcDataHandle.c ****             if(FourierCount_3 >= FourierNum_3)
+ 151              		.loc 1 132 13 is_stmt 1 view .LVU41
+ 152              		.loc 1 132 15 is_stmt 0 view .LVU42
+ 153 00a0 B245     		cmp	r10, r6
+ 154 00a2 13DD     		ble	.L1
+ 133:user/application/task/src/AdcDataHandle.c ****             {
+ 134:user/application/task/src/AdcDataHandle.c ****                 return;
+ 135:user/application/task/src/AdcDataHandle.c ****             }
+ 136:user/application/task/src/AdcDataHandle.c ****             FourierData_3[FourierCount_3++] = AdcData[i];
+ 155              		.loc 1 136 13 is_stmt 1 view .LVU43
+ 156              		.loc 1 136 41 is_stmt 0 view .LVU44
+ 157 00a4 06F1010C 		add	ip, r6, #1
+ 158              	.LVL13:
+ 159              		.loc 1 136 26 view .LVU45
+ 160 00a8 08EB860B 		add	fp, r8, r6, lsl #2
+ 161              		.loc 1 136 45 view .LVU46
+ 162 00ac 50F82E70 		ldr	r7, [r0, lr, lsl #2]
+ 163 00b0 07EE907A 		vmov	s15, r7	@ int
+ 164 00b4 F8EE677A 		vcvt.f32.u32	s15, s15
+ 165 00b8 CBED007A 		vstr.32	s15, [fp]
+ 137:user/application/task/src/AdcDataHandle.c ****             FourierData_3[FourierCount_3++] = 0;
+ 166              		.loc 1 137 13 is_stmt 1 view .LVU47
+ 167              	.LVL14:
+ 168              		.loc 1 137 26 is_stmt 0 view .LVU48
+ 169 00bc 08EB8C0C 		add	ip, r8, ip, lsl #2
+ 170 00c0 0236     		adds	r6, r6, #2
+ 171              	.LVL15:
+ 172              		.loc 1 137 45 view .LVU49
+ 173 00c2 4FF0000B 		mov	fp, #0
+ 174 00c6 CCF800B0 		str	fp, [ip]	@ float
+ 175 00ca ACE7     		b	.L5
+ 176              	.LVL16:
+ 177              	.L1:
+ 138:user/application/task/src/AdcDataHandle.c ****         }
+ARM GAS  /tmp/cc8h4sSR.s 			page 7
+
+
+ 139:user/application/task/src/AdcDataHandle.c ****     }
+ 140:user/application/task/src/AdcDataHandle.c **** }
+ 178              		.loc 1 140 1 view .LVU50
+ 179 00cc BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 180              	.LVL17:
+ 181              	.L12:
+ 182              		.loc 1 140 1 view .LVU51
+ 183              		.align	2
+ 184              	.L11:
+ 185 00d0 00000000 		.word	0
+ 186 00d4 56555555 		.word	1431655766
+ 187              		.cfi_endproc
+ 188              	.LFE253:
+ 190              		.section	.text.GetSpecificValue,"ax",%progbits
+ 191              		.align	1
+ 192              		.syntax unified
+ 193              		.thumb
+ 194              		.thumb_func
+ 195              		.fpu fpv4-sp-d16
+ 197              	GetSpecificValue:
+ 198              	.LVL18:
+ 199              	.LFB254:
+ 141:user/application/task/src/AdcDataHandle.c **** 
+ 142:user/application/task/src/AdcDataHandle.c **** // /**
+ 143:user/application/task/src/AdcDataHandle.c **** //  * @brief 删除ADC采样中的直流信号
+ 144:user/application/task/src/AdcDataHandle.c **** //  * 
+ 145:user/application/task/src/AdcDataHandle.c **** //  * @param FourierData 存放fourier transform数值的内存空间
+ 146:user/application/task/src/AdcDataHandle.c **** //  * @param FourierBufNum Fourier transform 数组元素数量
+ 147:user/application/task/src/AdcDataHandle.c **** //  */
+ 148:user/application/task/src/AdcDataHandle.c **** // static void DeleteDCSignale(FourierData_t* Fourier, uint16_t FourierBufNum)
+ 149:user/application/task/src/AdcDataHandle.c **** // {
+ 150:user/application/task/src/AdcDataHandle.c **** //     FourierData_t average = 0;
+ 151:user/application/task/src/AdcDataHandle.c **** // 		FourierData_t t = 0;//
+ 152:user/application/task/src/AdcDataHandle.c **** // 		FourierData_t temp = 0;
+ 153:user/application/task/src/AdcDataHandle.c **** //     uint16_t i = 0;
+ 154:user/application/task/src/AdcDataHandle.c **** //     for(i = 0; i < FourierBufNum; i++)
+ 155:user/application/task/src/AdcDataHandle.c **** //     {
+ 156:user/application/task/src/AdcDataHandle.c **** //         if(i == 0)
+ 157:user/application/task/src/AdcDataHandle.c **** //         {
+ 158:user/application/task/src/AdcDataHandle.c **** //             average = Fourier[2 * i];
+ 159:user/application/task/src/AdcDataHandle.c **** //         }
+ 160:user/application/task/src/AdcDataHandle.c **** //         else
+ 161:user/application/task/src/AdcDataHandle.c **** //         {
+ 162:user/application/task/src/AdcDataHandle.c **** //             t = i + 1;
+ 163:user/application/task/src/AdcDataHandle.c **** //             temp = average;
+ 164:user/application/task/src/AdcDataHandle.c **** //             average = ((t - 1) / t) * temp + (1 / t) * Fourier[2 * i];
+ 165:user/application/task/src/AdcDataHandle.c **** //         }
+ 166:user/application/task/src/AdcDataHandle.c **** //     }
+ 167:user/application/task/src/AdcDataHandle.c **** //     //去直流分量
+ 168:user/application/task/src/AdcDataHandle.c **** //     for(i = 0; i < FourierBufNum; i++)
+ 169:user/application/task/src/AdcDataHandle.c **** //     {
+ 170:user/application/task/src/AdcDataHandle.c **** //         Fourier[2 * i] -= average;
+ 171:user/application/task/src/AdcDataHandle.c **** //     }
+ 172:user/application/task/src/AdcDataHandle.c **** // }
+ 173:user/application/task/src/AdcDataHandle.c **** 
+ 174:user/application/task/src/AdcDataHandle.c **** /**
+ 175:user/application/task/src/AdcDataHandle.c ****  * @brief 提取特定频段的数值
+ARM GAS  /tmp/cc8h4sSR.s 			page 8
+
+
+ 176:user/application/task/src/AdcDataHandle.c ****  * 
+ 177:user/application/task/src/AdcDataHandle.c ****  * @param PhotoSensorValue ADC数组
+ 178:user/application/task/src/AdcDataHandle.c ****  */
+ 179:user/application/task/src/AdcDataHandle.c **** static void GetSpecificValue(AdcFilterValue_t* PhotoSensorValue)
+ 180:user/application/task/src/AdcDataHandle.c **** {
+ 200              		.loc 1 180 1 is_stmt 1 view -0
+ 201              		.cfi_startproc
+ 202              		@ args = 0, pretend = 0, frame = 0
+ 203              		@ frame_needed = 0, uses_anonymous_args = 0
+ 204              		@ link register save eliminated.
+ 181:user/application/task/src/AdcDataHandle.c ****     int i = 0;
+ 205              		.loc 1 181 5 view .LVU53
+ 182:user/application/task/src/AdcDataHandle.c ****     //数据重置
+ 183:user/application/task/src/AdcDataHandle.c ****     PhotoSensorValue->PhotoSensorFFT_1.PhotoSensorValue = 0;
+ 206              		.loc 1 183 5 view .LVU54
+ 207              		.loc 1 183 57 is_stmt 0 view .LVU55
+ 208 0000 00F61C42 		addw	r2, r0, #3100
+ 209 0004 0023     		movs	r3, #0
+ 210 0006 1360     		str	r3, [r2]	@ float
+ 184:user/application/task/src/AdcDataHandle.c ****     PhotoSensorValue->PhotoSensorFFT_2.PhotoSensorValue = 0;
+ 211              		.loc 1 184 5 is_stmt 1 view .LVU56
+ 212              		.loc 1 184 57 is_stmt 0 view .LVU57
+ 213 0008 00F5C152 		add	r2, r0, #6176
+ 214 000c 9361     		str	r3, [r2, #24]	@ float
+ 185:user/application/task/src/AdcDataHandle.c ****     PhotoSensorValue->PhotoSensorFFT_3.PhotoSensorValue = 0;
+ 215              		.loc 1 185 5 is_stmt 1 view .LVU58
+ 216              		.loc 1 185 57 is_stmt 0 view .LVU59
+ 217 000e 00F50052 		add	r2, r0, #8192
+ 218 0012 02F25441 		addw	r1, r2, #1108
+ 219 0016 0B60     		str	r3, [r1]	@ float
+ 186:user/application/task/src/AdcDataHandle.c ****     //求其均值
+ 187:user/application/task/src/AdcDataHandle.c ****     for(i = PhotoSensorValue->AdcSampleNumMin; i <= PhotoSensorValue->AdcSampleNumMax;i++)
+ 220              		.loc 1 187 5 is_stmt 1 view .LVU60
+ 221              		.loc 1 187 29 is_stmt 0 view .LVU61
+ 222 0018 B2F85A34 		ldrh	r3, [r2, #1114]
+ 223              	.LVL19:
+ 224              		.loc 1 187 5 view .LVU62
+ 225 001c 2AE0     		b	.L14
+ 226              	.L15:
+ 188:user/application/task/src/AdcDataHandle.c ****     {
+ 189:user/application/task/src/AdcDataHandle.c ****         PhotoSensorValue->PhotoSensorFFT_1.PhotoSensorValue += PhotoSensorValue->PhotoSensorFFT_1.P
+ 227              		.loc 1 189 9 is_stmt 1 discriminator 3 view .LVU63
+ 228              		.loc 1 189 124 is_stmt 0 discriminator 3 view .LVU64
+ 229 001e 03F20622 		addw	r2, r3, #518
+ 230 0022 00EB8202 		add	r2, r0, r2, lsl #2
+ 231 0026 92ED017A 		vldr.32	s14, [r2, #4]
+ 232              		.loc 1 189 61 discriminator 3 view .LVU65
+ 233 002a 00F61C42 		addw	r2, r0, #3100
+ 234 002e D2ED007A 		vldr.32	s15, [r2]
+ 235 0032 77EE877A 		vadd.f32	s15, s15, s14
+ 236 0036 C2ED007A 		vstr.32	s15, [r2]
+ 190:user/application/task/src/AdcDataHandle.c ****         PhotoSensorValue->PhotoSensorFFT_2.PhotoSensorValue += PhotoSensorValue->PhotoSensorFFT_2.P
+ 237              		.loc 1 190 9 is_stmt 1 discriminator 3 view .LVU66
+ 238              		.loc 1 190 124 is_stmt 0 discriminator 3 view .LVU67
+ 239 003a 03F20E52 		addw	r2, r3, #1294
+ 240 003e 00EB8202 		add	r2, r0, r2, lsl #2
+ 241 0042 92ED007A 		vldr.32	s14, [r2]
+ARM GAS  /tmp/cc8h4sSR.s 			page 9
+
+
+ 242              		.loc 1 190 61 discriminator 3 view .LVU68
+ 243 0046 00F5C152 		add	r2, r0, #6176
+ 244 004a D2ED067A 		vldr.32	s15, [r2, #24]
+ 245 004e 77EE877A 		vadd.f32	s15, s15, s14
+ 246 0052 C2ED067A 		vstr.32	s15, [r2, #24]
+ 191:user/application/task/src/AdcDataHandle.c ****         PhotoSensorValue->PhotoSensorFFT_3.PhotoSensorValue += PhotoSensorValue->PhotoSensorFFT_3.P
+ 247              		.loc 1 191 9 is_stmt 1 discriminator 3 view .LVU69
+ 248              		.loc 1 191 124 is_stmt 0 discriminator 3 view .LVU70
+ 249 0056 03F61402 		addw	r2, r3, #2068
+ 250 005a 00EB8202 		add	r2, r0, r2, lsl #2
+ 251 005e 92ED017A 		vldr.32	s14, [r2, #4]
+ 252              		.loc 1 191 61 discriminator 3 view .LVU71
+ 253 0062 00F51152 		add	r2, r0, #9280
+ 254 0066 D2ED057A 		vldr.32	s15, [r2, #20]
+ 255 006a 77EE877A 		vadd.f32	s15, s15, s14
+ 256 006e C2ED057A 		vstr.32	s15, [r2, #20]
+ 187:user/application/task/src/AdcDataHandle.c ****     {
+ 257              		.loc 1 187 87 is_stmt 1 discriminator 3 view .LVU72
+ 187:user/application/task/src/AdcDataHandle.c ****     {
+ 258              		.loc 1 187 88 is_stmt 0 discriminator 3 view .LVU73
+ 259 0072 0133     		adds	r3, r3, #1
+ 260              	.LVL20:
+ 261              	.L14:
+ 187:user/application/task/src/AdcDataHandle.c ****     {
+ 262              		.loc 1 187 48 is_stmt 1 discriminator 1 view .LVU74
+ 187:user/application/task/src/AdcDataHandle.c ****     {
+ 263              		.loc 1 187 69 is_stmt 0 discriminator 1 view .LVU75
+ 264 0074 00F50052 		add	r2, r0, #8192
+ 265 0078 B2F85824 		ldrh	r2, [r2, #1112]
+ 187:user/application/task/src/AdcDataHandle.c ****     {
+ 266              		.loc 1 187 5 discriminator 1 view .LVU76
+ 267 007c 9A42     		cmp	r2, r3
+ 268 007e CEDA     		bge	.L15
+ 192:user/application/task/src/AdcDataHandle.c ****     }
+ 193:user/application/task/src/AdcDataHandle.c ****     
+ 194:user/application/task/src/AdcDataHandle.c **** }
+ 269              		.loc 1 194 1 view .LVU77
+ 270 0080 7047     		bx	lr
+ 271              		.cfi_endproc
+ 272              	.LFE254:
+ 274              		.section	.text.AdcFilterStructInit,"ax",%progbits
+ 275              		.align	1
+ 276              		.syntax unified
+ 277              		.thumb
+ 278              		.thumb_func
+ 279              		.fpu fpv4-sp-d16
+ 281              	AdcFilterStructInit:
+ 282              	.LVL21:
+ 283              	.LFB252:
+  64:user/application/task/src/AdcDataHandle.c ****     //获取ADC原数组
+ 284              		.loc 1 64 1 is_stmt 1 view -0
+ 285              		.cfi_startproc
+ 286              		@ args = 0, pretend = 0, frame = 0
+ 287              		@ frame_needed = 0, uses_anonymous_args = 0
+  64:user/application/task/src/AdcDataHandle.c ****     //获取ADC原数组
+ 288              		.loc 1 64 1 is_stmt 0 view .LVU79
+ 289 0000 10B5     		push	{r4, lr}
+ARM GAS  /tmp/cc8h4sSR.s 			page 10
+
+
+ 290              	.LCFI1:
+ 291              		.cfi_def_cfa_offset 8
+ 292              		.cfi_offset 4, -8
+ 293              		.cfi_offset 14, -4
+ 294 0002 0446     		mov	r4, r0
+  66:user/application/task/src/AdcDataHandle.c ****     //配置Fourier transform buf size
+ 295              		.loc 1 66 5 is_stmt 1 view .LVU80
+  66:user/application/task/src/AdcDataHandle.c ****     //配置Fourier transform buf size
+ 296              		.loc 1 66 38 is_stmt 0 view .LVU81
+ 297 0004 FFF7FEFF 		bl	GetPhotoSensorAdcStruct
+ 298              	.LVL22:
+  66:user/application/task/src/AdcDataHandle.c ****     //配置Fourier transform buf size
+ 299              		.loc 1 66 36 view .LVU82
+ 300 0008 2060     		str	r0, [r4]
+  68:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_2.PhotoSensorFFTInputSize = FOURIER_INPUT_BUF_NUM;
+ 301              		.loc 1 68 5 is_stmt 1 view .LVU83
+  68:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_2.PhotoSensorFFTInputSize = FOURIER_INPUT_BUF_NUM;
+ 302              		.loc 1 68 67 is_stmt 0 view .LVU84
+ 303 000a 4FF40073 		mov	r3, #512
+ 304 000e 2383     		strh	r3, [r4, #24]	@ movhi
+  69:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_3.PhotoSensorFFTInputSize = FOURIER_INPUT_BUF_NUM;
+ 305              		.loc 1 69 5 is_stmt 1 view .LVU85
+  69:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_3.PhotoSensorFFTInputSize = FOURIER_INPUT_BUF_NUM;
+ 306              		.loc 1 69 67 is_stmt 0 view .LVU86
+ 307 0010 A4F8343C 		strh	r3, [r4, #3124]	@ movhi
+  70:user/application/task/src/AdcDataHandle.c **** 
+ 308              		.loc 1 70 5 is_stmt 1 view .LVU87
+  70:user/application/task/src/AdcDataHandle.c **** 
+ 309              		.loc 1 70 67 is_stmt 0 view .LVU88
+ 310 0014 04F58052 		add	r2, r4, #4096
+ 311 0018 A2F85038 		strh	r3, [r2, #2128]	@ movhi
+  72:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_2.PhotoSensorFFTOutputSize = FOURIER_OUPUT_BUF_NUM;
+ 312              		.loc 1 72 5 is_stmt 1 view .LVU89
+  72:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_2.PhotoSensorFFTOutputSize = FOURIER_OUPUT_BUF_NUM;
+ 313              		.loc 1 72 68 is_stmt 0 view .LVU90
+ 314 001c 4FF48073 		mov	r3, #256
+ 315 0020 6383     		strh	r3, [r4, #26]	@ movhi
+  73:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_3.PhotoSensorFFTOutputSize = FOURIER_OUPUT_BUF_NUM;
+ 316              		.loc 1 73 5 is_stmt 1 view .LVU91
+  73:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->PhotoSensorFFT_3.PhotoSensorFFTOutputSize = FOURIER_OUPUT_BUF_NUM;
+ 317              		.loc 1 73 68 is_stmt 0 view .LVU92
+ 318 0022 A4F8363C 		strh	r3, [r4, #3126]	@ movhi
+  74:user/application/task/src/AdcDataHandle.c ****     //配置FFT提取元素
+ 319              		.loc 1 74 5 is_stmt 1 view .LVU93
+  74:user/application/task/src/AdcDataHandle.c ****     //配置FFT提取元素
+ 320              		.loc 1 74 68 is_stmt 0 view .LVU94
+ 321 0026 A2F85238 		strh	r3, [r2, #2130]	@ movhi
+  76:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->AdcSampleNumMax = ADC_SAMPLE_MAX_NUM;
+ 322              		.loc 1 76 5 is_stmt 1 view .LVU95
+  76:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->AdcSampleNumMax = ADC_SAMPLE_MAX_NUM;
+ 323              		.loc 1 76 42 is_stmt 0 view .LVU96
+ 324 002a 04F50054 		add	r4, r4, #8192
+ 325              	.LVL23:
+  76:user/application/task/src/AdcDataHandle.c ****     AdcFilterStructInit->AdcSampleNumMax = ADC_SAMPLE_MAX_NUM;
+ 326              		.loc 1 76 42 view .LVU97
+ 327 002e 6E23     		movs	r3, #110
+ 328 0030 A4F85A34 		strh	r3, [r4, #1114]	@ movhi
+ARM GAS  /tmp/cc8h4sSR.s 			page 11
+
+
+  77:user/application/task/src/AdcDataHandle.c **** }
+ 329              		.loc 1 77 5 is_stmt 1 view .LVU98
+  77:user/application/task/src/AdcDataHandle.c **** }
+ 330              		.loc 1 77 42 is_stmt 0 view .LVU99
+ 331 0034 7A23     		movs	r3, #122
+ 332 0036 A4F85834 		strh	r3, [r4, #1112]	@ movhi
+  78:user/application/task/src/AdcDataHandle.c **** 
+ 333              		.loc 1 78 1 view .LVU100
+ 334 003a 10BD     		pop	{r4, pc}
+  78:user/application/task/src/AdcDataHandle.c **** 
+ 335              		.loc 1 78 1 view .LVU101
+ 336              		.cfi_endproc
+ 337              	.LFE252:
+ 339              		.section	.text.PhotoSensorFourierTransform,"ax",%progbits
+ 340              		.align	1
+ 341              		.syntax unified
+ 342              		.thumb
+ 343              		.thumb_func
+ 344              		.fpu fpv4-sp-d16
+ 346              	PhotoSensorFourierTransform:
+ 347              	.LFB250:
+  24:user/application/task/src/AdcDataHandle.c ****     //初始化ADC信号过滤结构体
+ 348              		.loc 1 24 1 is_stmt 1 view -0
+ 349              		.cfi_startproc
+ 350              		@ args = 0, pretend = 0, frame = 0
+ 351              		@ frame_needed = 0, uses_anonymous_args = 0
+ 352 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 353              	.LCFI2:
+ 354              		.cfi_def_cfa_offset 32
+ 355              		.cfi_offset 4, -32
+ 356              		.cfi_offset 5, -28
+ 357              		.cfi_offset 6, -24
+ 358              		.cfi_offset 7, -20
+ 359              		.cfi_offset 8, -16
+ 360              		.cfi_offset 9, -12
+ 361              		.cfi_offset 10, -8
+ 362              		.cfi_offset 14, -4
+ 363 0004 84B0     		sub	sp, sp, #16
+ 364              	.LCFI3:
+ 365              		.cfi_def_cfa_offset 48
+  26:user/application/task/src/AdcDataHandle.c **** 
+ 366              		.loc 1 26 5 view .LVU103
+ 367 0006 2E4C     		ldr	r4, .L20
+ 368 0008 2046     		mov	r0, r4
+ 369 000a FFF7FEFF 		bl	AdcFilterStructInit
+ 370              	.LVL24:
+  29:user/application/task/src/AdcDataHandle.c ****                         AdcfilterValue.PhotoSensorFFT_1.PhotoSensorFFTInputValue, AdcfilterValue.Ph
+ 371              		.loc 1 29 5 view .LVU104
+  29:user/application/task/src/AdcDataHandle.c ****                         AdcfilterValue.PhotoSensorFFT_1.PhotoSensorFFTInputValue, AdcfilterValue.Ph
+ 372              		.loc 1 29 40 is_stmt 0 view .LVU105
+ 373 000e 2068     		ldr	r0, [r4]
+  29:user/application/task/src/AdcDataHandle.c ****                         AdcfilterValue.PhotoSensorFFT_1.PhotoSensorFFTInputValue, AdcfilterValue.Ph
+ 374              		.loc 1 29 5 view .LVU106
+ 375 0010 04F11C07 		add	r7, r4, #28
+ 376 0014 8188     		ldrh	r1, [r0, #4]
+ 377 0016 04F58053 		add	r3, r4, #4096
+ 378 001a B3F85038 		ldrh	r3, [r3, #2128]
+ARM GAS  /tmp/cc8h4sSR.s 			page 12
+
+
+ 379 001e 0393     		str	r3, [sp, #12]
+ 380 0020 284D     		ldr	r5, .L20+4
+ 381 0022 0295     		str	r5, [sp, #8]
+ 382 0024 B4F8343C 		ldrh	r3, [r4, #3124]
+ 383 0028 0193     		str	r3, [sp, #4]
+ 384 002a 04F63846 		addw	r6, r4, #3128
+ 385 002e 0096     		str	r6, [sp]
+ 386 0030 238B     		ldrh	r3, [r4, #24]
+ 387 0032 3A46     		mov	r2, r7
+ 388 0034 0830     		adds	r0, r0, #8
+ 389 0036 FFF7FEFF 		bl	AdcDataToFourierData
+ 390              	.LVL25:
+  34:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_init_f32(&AdcfilterValue.PhotoSensorFFT_2.PhotoSensorFFT, FOURIER_TRANSFORM_POI
+ 391              		.loc 1 34 5 is_stmt 1 view .LVU107
+ 392 003a 04F1040A 		add	r10, r4, #4
+ 393 003e 0123     		movs	r3, #1
+ 394 0040 0022     		movs	r2, #0
+ 395 0042 4FF48071 		mov	r1, #256
+ 396 0046 5046     		mov	r0, r10
+ 397 0048 FFF7FEFF 		bl	arm_cfft_radix4_init_f32
+ 398              	.LVL26:
+  35:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_init_f32(&AdcfilterValue.PhotoSensorFFT_3.PhotoSensorFFT, FOURIER_TRANSFORM_POI
+ 399              		.loc 1 35 5 view .LVU108
+ 400 004c 04F54269 		add	r9, r4, #3104
+ 401 0050 0123     		movs	r3, #1
+ 402 0052 0022     		movs	r2, #0
+ 403 0054 4FF48071 		mov	r1, #256
+ 404 0058 4846     		mov	r0, r9
+ 405 005a FFF7FEFF 		bl	arm_cfft_radix4_init_f32
+ 406              	.LVL27:
+  36:user/application/task/src/AdcDataHandle.c ****     //FFT计算
+ 407              		.loc 1 36 5 view .LVU109
+ 408 005e A5F11808 		sub	r8, r5, #24
+ 409 0062 0123     		movs	r3, #1
+ 410 0064 0022     		movs	r2, #0
+ 411 0066 4FF48071 		mov	r1, #256
+ 412 006a 4046     		mov	r0, r8
+ 413 006c FFF7FEFF 		bl	arm_cfft_radix4_init_f32
+ 414              	.LVL28:
+  38:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_f32(&AdcfilterValue.PhotoSensorFFT_2.PhotoSensorFFT, AdcfilterValue.PhotoSensor
+ 415              		.loc 1 38 5 view .LVU110
+ 416 0070 3946     		mov	r1, r7
+ 417 0072 5046     		mov	r0, r10
+ 418 0074 FFF7FEFF 		bl	arm_cfft_radix4_f32
+ 419              	.LVL29:
+  39:user/application/task/src/AdcDataHandle.c ****     arm_cfft_radix4_f32(&AdcfilterValue.PhotoSensorFFT_3.PhotoSensorFFT, AdcfilterValue.PhotoSensor
+ 420              		.loc 1 39 5 view .LVU111
+ 421 0078 3146     		mov	r1, r6
+ 422 007a 4846     		mov	r0, r9
+ 423 007c FFF7FEFF 		bl	arm_cfft_radix4_f32
+ 424              	.LVL30:
+  40:user/application/task/src/AdcDataHandle.c ****     
+ 425              		.loc 1 40 5 view .LVU112
+ 426 0080 2946     		mov	r1, r5
+ 427 0082 4046     		mov	r0, r8
+ 428 0084 FFF7FEFF 		bl	arm_cfft_radix4_f32
+ 429              	.LVL31:
+ARM GAS  /tmp/cc8h4sSR.s 			page 13
+
+
+  43:user/application/task/src/AdcDataHandle.c ****     arm_cmplx_mag_f32(AdcfilterValue.PhotoSensorFFT_2.PhotoSensorFFTInputValue, AdcfilterValue.Phot
+ 430              		.loc 1 43 5 view .LVU113
+ 431 0088 4FF48072 		mov	r2, #256
+ 432 008c 04F61C01 		addw	r1, r4, #2076
+ 433 0090 3846     		mov	r0, r7
+ 434 0092 FFF7FEFF 		bl	arm_cmplx_mag_f32
+ 435              	.LVL32:
+  44:user/application/task/src/AdcDataHandle.c ****     arm_cmplx_mag_f32(AdcfilterValue.PhotoSensorFFT_3.PhotoSensorFFTInputValue, AdcfilterValue.Phot
+ 436              		.loc 1 44 5 view .LVU114
+ 437 0096 4FF48072 		mov	r2, #256
+ 438 009a A5F21C41 		subw	r1, r5, #1052
+ 439 009e 3046     		mov	r0, r6
+ 440 00a0 FFF7FEFF 		bl	arm_cmplx_mag_f32
+ 441              	.LVL33:
+  45:user/application/task/src/AdcDataHandle.c **** 
+ 442              		.loc 1 45 5 view .LVU115
+ 443 00a4 4FF48072 		mov	r2, #256
+ 444 00a8 05F50061 		add	r1, r5, #2048
+ 445 00ac 2846     		mov	r0, r5
+ 446 00ae FFF7FEFF 		bl	arm_cmplx_mag_f32
+ 447              	.LVL34:
+  47:user/application/task/src/AdcDataHandle.c **** } 
+ 448              		.loc 1 47 5 view .LVU116
+ 449 00b2 2046     		mov	r0, r4
+ 450 00b4 FFF7FEFF 		bl	GetSpecificValue
+ 451              	.LVL35:
+  48:user/application/task/src/AdcDataHandle.c **** 
+ 452              		.loc 1 48 1 is_stmt 0 view .LVU117
+ 453 00b8 04B0     		add	sp, sp, #16
+ 454              	.LCFI4:
+ 455              		.cfi_def_cfa_offset 32
+ 456              		@ sp needed
+ 457 00ba BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 458              	.L21:
+ 459 00be 00BF     		.align	2
+ 460              	.L20:
+ 461 00c0 00000000 		.word	AdcfilterValue
+ 462 00c4 54180000 		.word	AdcfilterValue+6228
+ 463              		.cfi_endproc
+ 464              	.LFE250:
+ 466              		.section	.text.GetAdcFilterValue,"ax",%progbits
+ 467              		.align	1
+ 468              		.global	GetAdcFilterValue
+ 469              		.syntax unified
+ 470              		.thumb
+ 471              		.thumb_func
+ 472              		.fpu fpv4-sp-d16
+ 474              	GetAdcFilterValue:
+ 475              	.LFB249:
+  18:user/application/task/src/AdcDataHandle.c ****     return &AdcfilterValue;
+ 476              		.loc 1 18 1 is_stmt 1 view -0
+ 477              		.cfi_startproc
+ 478              		@ args = 0, pretend = 0, frame = 0
+ 479              		@ frame_needed = 0, uses_anonymous_args = 0
+ 480              		@ link register save eliminated.
+  19:user/application/task/src/AdcDataHandle.c **** }
+ 481              		.loc 1 19 5 view .LVU119
+ARM GAS  /tmp/cc8h4sSR.s 			page 14
+
+
+  20:user/application/task/src/AdcDataHandle.c **** 
+ 482              		.loc 1 20 1 is_stmt 0 view .LVU120
+ 483 0000 0048     		ldr	r0, .L23
+ 484 0002 7047     		bx	lr
+ 485              	.L24:
+ 486              		.align	2
+ 487              	.L23:
+ 488 0004 00000000 		.word	AdcfilterValue
+ 489              		.cfi_endproc
+ 490              	.LFE249:
+ 492              		.section	.text.HAL_ADC_ConvHalfCpltCallback,"ax",%progbits
+ 493              		.align	1
+ 494              		.global	HAL_ADC_ConvHalfCpltCallback
+ 495              		.syntax unified
+ 496              		.thumb
+ 497              		.thumb_func
+ 498              		.fpu fpv4-sp-d16
+ 500              	HAL_ADC_ConvHalfCpltCallback:
+ 501              	.LVL36:
+ 502              	.LFB251:
+  52:user/application/task/src/AdcDataHandle.c ****     //完成一次测量关闭DMA数据转运
+ 503              		.loc 1 52 1 is_stmt 1 view -0
+ 504              		.cfi_startproc
+ 505              		@ args = 0, pretend = 0, frame = 0
+ 506              		@ frame_needed = 0, uses_anonymous_args = 0
+  52:user/application/task/src/AdcDataHandle.c ****     //完成一次测量关闭DMA数据转运
+ 507              		.loc 1 52 1 is_stmt 0 view .LVU122
+ 508 0000 08B5     		push	{r3, lr}
+ 509              	.LCFI5:
+ 510              		.cfi_def_cfa_offset 8
+ 511              		.cfi_offset 3, -8
+ 512              		.cfi_offset 14, -4
+  54:user/application/task/src/AdcDataHandle.c ****     //处理ADC采样数据，对采样数据进行信号处理，提取特定频段数据
+ 513              		.loc 1 54 5 is_stmt 1 view .LVU123
+ 514 0002 0448     		ldr	r0, .L27
+ 515              	.LVL37:
+  54:user/application/task/src/AdcDataHandle.c ****     //处理ADC采样数据，对采样数据进行信号处理，提取特定频段数据
+ 516              		.loc 1 54 5 is_stmt 0 view .LVU124
+ 517 0004 FFF7FEFF 		bl	HAL_ADC_Stop_DMA
+ 518              	.LVL38:
+  56:user/application/task/src/AdcDataHandle.c ****     //开启ADC DMA转运
+ 519              		.loc 1 56 5 is_stmt 1 view .LVU125
+ 520 0008 FFF7FEFF 		bl	PhotoSensorFourierTransform
+ 521              	.LVL39:
+  58:user/application/task/src/AdcDataHandle.c **** 
+ 522              		.loc 1 58 5 view .LVU126
+ 523 000c FFF7FEFF 		bl	PhotoSensorAdcOpen
+ 524              	.LVL40:
+  60:user/application/task/src/AdcDataHandle.c **** 
+ 525              		.loc 1 60 1 is_stmt 0 view .LVU127
+ 526 0010 08BD     		pop	{r3, pc}
+ 527              	.L28:
+ 528 0012 00BF     		.align	2
+ 529              	.L27:
+ 530 0014 00000000 		.word	hadc1
+ 531              		.cfi_endproc
+ 532              	.LFE251:
+ARM GAS  /tmp/cc8h4sSR.s 			page 15
+
+
+ 534              		.global	AdcfilterValue
+ 535              		.section	.bss.AdcfilterValue,"aw",%nobits
+ 536              		.align	2
+ 539              	AdcfilterValue:
+ 540 0000 00000000 		.space	9308
+ 540      00000000 
+ 540      00000000 
+ 540      00000000 
+ 540      00000000 
+ 541              		.text
+ 542              	.Letext0:
+ 543              		.file 2 "/usr/lib/gcc/arm-none-eabi/10.3.1/include/stdint.h"
+ 544              		.file 3 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xc.h"
+ 545              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 546              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 547              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 548              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h"
+ 549              		.file 8 "Middlewares/ST/ARM/DSP/Inc/arm_math.h"
+ 550              		.file 9 "user/hardware/inc/PhotoSensor.h"
+ 551              		.file 10 "user/application/task/inc/AdcDataHandle.h"
+ 552              		.file 11 "Core/Inc/adc.h"
+ARM GAS  /tmp/cc8h4sSR.s 			page 16
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 AdcDataHandle.c
+     /tmp/cc8h4sSR.s:18     .text.AdcDataToFourierData:0000000000000000 $t
+     /tmp/cc8h4sSR.s:25     .text.AdcDataToFourierData:0000000000000000 AdcDataToFourierData
+     /tmp/cc8h4sSR.s:185    .text.AdcDataToFourierData:00000000000000d0 $d
+     /tmp/cc8h4sSR.s:191    .text.GetSpecificValue:0000000000000000 $t
+     /tmp/cc8h4sSR.s:197    .text.GetSpecificValue:0000000000000000 GetSpecificValue
+     /tmp/cc8h4sSR.s:275    .text.AdcFilterStructInit:0000000000000000 $t
+     /tmp/cc8h4sSR.s:281    .text.AdcFilterStructInit:0000000000000000 AdcFilterStructInit
+     /tmp/cc8h4sSR.s:340    .text.PhotoSensorFourierTransform:0000000000000000 $t
+     /tmp/cc8h4sSR.s:346    .text.PhotoSensorFourierTransform:0000000000000000 PhotoSensorFourierTransform
+     /tmp/cc8h4sSR.s:461    .text.PhotoSensorFourierTransform:00000000000000c0 $d
+     /tmp/cc8h4sSR.s:539    .bss.AdcfilterValue:0000000000000000 AdcfilterValue
+     /tmp/cc8h4sSR.s:467    .text.GetAdcFilterValue:0000000000000000 $t
+     /tmp/cc8h4sSR.s:474    .text.GetAdcFilterValue:0000000000000000 GetAdcFilterValue
+     /tmp/cc8h4sSR.s:488    .text.GetAdcFilterValue:0000000000000004 $d
+     /tmp/cc8h4sSR.s:493    .text.HAL_ADC_ConvHalfCpltCallback:0000000000000000 $t
+     /tmp/cc8h4sSR.s:500    .text.HAL_ADC_ConvHalfCpltCallback:0000000000000000 HAL_ADC_ConvHalfCpltCallback
+     /tmp/cc8h4sSR.s:530    .text.HAL_ADC_ConvHalfCpltCallback:0000000000000014 $d
+     /tmp/cc8h4sSR.s:536    .bss.AdcfilterValue:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+GetPhotoSensorAdcStruct
+arm_cfft_radix4_init_f32
+arm_cfft_radix4_f32
+arm_cmplx_mag_f32
+HAL_ADC_Stop_DMA
+PhotoSensorAdcOpen
+hadc1
